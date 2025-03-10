@@ -34,9 +34,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy
-        run: echo "Deploying..."
       - name: Download Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
+      - name: Get the List of files in the dist-files
+        run: ls
+      - name: Deploy
+        run: echo "Deploying..."
