@@ -12,54 +12,26 @@ permissions:
   packages: write
   
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: npm ci
-      - name: Lint code
-        run: npm run lint
-      - name: Test code
-        run: npm run test
-      - name: print
-        run: echo '${{toJson(github)}}'        
-        
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    outputs:
-      script-file: ${{steps.build-filename.outputs.file-name}}
-    steps:
-      - name: Get code
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: npm ci
-      - name: Build website
-        run: npm run build
-      - name: Get fileName
-        id: build-filename
-        run: find dist/assets/*.js -type f -execdir echo 'file-name={}' >> $GITHUB_OUTPUT ';'
-      - name: Uploda Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-files
-          path: dist
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-      - name: Show file name
-        run: echo "${{needs.build.outputs.script-file}}"   
-      - name: Get the List of files in the dist-files
-        run: ls
-      - name: Deploy
-        run: echo "Deploying..."
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 
+          
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.1.11
+      with:
+        versionSpec: '5.11.1'
+              
+    - name: Determine Version
+      id: git_version # step id used as reference for output values
+      uses: gittools/actions/gitversion/execute@v3.1.11       
+      with:
+        useConfigFile: true
+        configFilePath: GitVersion.yml           
+
 
   versioning:
     runs-on: ubuntu-latest
